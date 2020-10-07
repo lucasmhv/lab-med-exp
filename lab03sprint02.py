@@ -2,7 +2,8 @@ from dotenv import load_dotenv, find_dotenv
 import requests
 import os
 import json
-import pandas
+import pandas as pd
+import csv
 
 load_dotenv(find_dotenv())
 
@@ -20,6 +21,7 @@ def __query(primaryLanguage, num_repositories):
         node {{
           ... on Repository {{
             nameWithOwner
+            sshUrl
             createdAt
             forkCount
             primaryLanguage {{
@@ -49,22 +51,30 @@ def get_repositories(primaryLanguage, num_repositories):
   query = __query(primaryLanguage, num_repositories)
   result = requests.post("https://api.github.com/graphql", json={'query': query}, headers=headers)
   if result.status_code == 200:
-      data = result.json()['data']['search']
-      repositories = list(map(lambda x: x['node'], data['edges']))
-      print(f"\rRetrieved {len(repositories)} repositories", end = '')
-      return repositories 
+    data = result.json()['data']['search']
+    repositories = list(map(lambda x: x['node'], data['edges']))
+    print(f"\rRetrieved {len(repositories)} repositories", end = '')
+    return repositories 
 
-print("Laboratory 3 - Sprint 01")
+print("Laboratory 3 - Sprint 02")
 print("Get Java Repositories")
 repositoriesJava = get_repositories("java", 100)
 print("\nGet Python Repositories")
 repositoriesPython = get_repositories("python", 100)
 repositories = repositoriesJava + repositoriesPython
-df = pandas.json_normalize(repositories)
+df = pd.json_normalize(repositories)  
 csvText = df.to_csv().replace("\r", "")
-filename = "lab03sprint01.csv"
+filename = "lab03sprint02.csv"
 print(f"\nRepositories saved on file {filename}")
 file = open(filename, "w")
 file.write(csvText)
 file.close()
+
+gh_repos = "gh-repos.txt"
+df = pd.read_csv(filename)
+ssh_urls = df.sshUrl
+
+with open(gh_repos, 'w') as f:
+  f.write("\n".join(ssh_urls))
+
 print("End")            

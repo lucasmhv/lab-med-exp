@@ -1,0 +1,4 @@
+git@github.com:Netflix/ribbon.git
+git@github.com:androidx/androidx.git
+git@github.com:radkovo/CSSBox.git
+git@github.com:entando/entando-core.git
